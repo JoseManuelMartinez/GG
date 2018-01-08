@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: cd803309a8055604aaadaff09af69801
+timeCreated: 1515335257
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - Player: {instanceID: 0}
+  - Map: {fileID: 1311289815427346, guid: 2c605fb679c2ef1428515a3947828356, type: 2}
+  - redCube: {fileID: 1805315069342470, guid: 844cd752c2e556048931056863de3dfc, type: 2}
+  - greenCube: {fileID: 1291861836696574, guid: b050a60674b5e81419a6e2b06aec5773,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
