@@ -10,6 +10,7 @@ public class CreateTerrain : MonoBehaviour {
 	void Start () {
 
 		GameObject MapGenerate = Instantiate (Map, transform.position, transform.rotation) as GameObject;
+		GlobalObject.SetMap (Map.GetComponent<Terrain> ());
 	}
 	
 	// Update is called once per frame

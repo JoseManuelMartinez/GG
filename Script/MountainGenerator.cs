@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor.AI;
 
 public class MountainGenerator : MonoBehaviour {
 
 	private TerrainData terrainData;
 	private List<GameObject> listGreenBox; //Lista donde se almacenan las casillas validas
+	private int SpaceBerweenCube = 10;
+	private int sizeMap;
 
 	public GameObject Player;
 	public GameObject Map;
@@ -26,9 +29,26 @@ public class MountainGenerator : MonoBehaviour {
 	void Start () {
 
 		Player = new GameObject ();
+		terrainData = Terrain.activeTerrain.terrainData;
+
+
+		//Leemos tamaño del mapa que se eligió en el menu
+		sizeMap = PlayerPrefs.GetInt("TamanioMapa");
+		terrainData.heightmapResolution = sizeMap;
+		//terrainData.
+		Terrain terrainMap = this.GetComponent<Terrain>();
+		Vector3 sizeVector = new Vector3 (sizeMap, 300, sizeMap);
+		terrainMap.terrainData.size = sizeVector;
+		GlobalObject.SetMap (terrainMap);
+
+		Debug.Log ("TERRAIN DATA");
+		Debug.Log (terrainMap.terrainData.alphamapHeight);
+		Debug.Log (terrainMap.terrainData.alphamapWidth);
+		Debug.Log (terrainMap.terrainData.heightmapHeight);
+		Debug.Log (terrainMap.terrainData.heightmapWidth);
 
 		GenerateHeightmap ();
-		PaintMap ();
+		//PaintMap ();
 
 		this.gameObject.isStatic = true;
 
@@ -59,7 +79,7 @@ public class MountainGenerator : MonoBehaviour {
 	}
 
 	void GenerateHeightmap() { //Este método genera el mapa llamando a la función de Perlin Pass
-		terrainData = Terrain.activeTerrain.terrainData;
+		//terrainData = Terrain.activeTerrain.terrainData;
 		var hw = terrainData.heightmapWidth;
 		var hh = terrainData.heightmapHeight;
 		var heights = new float[hw,hh];
@@ -74,22 +94,22 @@ public class MountainGenerator : MonoBehaviour {
 
 		float max_altura = 0;
 
-		for (int y = 0; y < terrainData.alphamapHeight; y++){
-			for (int x = 0; x < terrainData.alphamapWidth; x++){
+		for (int y = 0; y < terrainData.heightmapHeight; y++){
+			for (int x = 0; x < terrainData.heightmapWidth; x++){
 				float height = terrainData.GetHeight(y,x);
 				if (height>max_altura) max_altura = height;
 			}
 		}
 
-		float[, ,] pTexturas= new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
+		float[, ,] pTexturas= new float[terrainData.heightmapWidth, terrainData.heightmapHeight, terrainData.alphamapLayers];
 
 		float amplitud = max_altura/terrainData.alphamapLayers; 
 
 		float altura = 0.0f;
 		float peso = 0.0f;
 
-		for (int y = 0; y < terrainData.alphamapHeight; y++) {
-			for (int x = 0; x < terrainData.alphamapWidth; x++) {
+		for (int y = 0; y < terrainData.heightmapHeight; y++) {
+			for (int x = 0; x < terrainData.heightmapWidth; x++) {
 
 				altura = terrainData.GetHeight(y,x);
 
@@ -107,8 +127,8 @@ public class MountainGenerator : MonoBehaviour {
 					peso = 0.5f;
 
 				pTexturas[x,y,textura_base] = peso;
-				if (textura_base<terrainData.alphamapLayers-1) pTexturas[x,y,textura_base+1] = (1.0f-peso)/2; // Comentar para evitar el mezclado
-				if (textura_base>1) pTexturas[x,y,textura_base-1] = (1.0f-peso)/2; // comentar para evitar el mezclado
+				//if (textura_base<terrainData.alphamapLayers-1) pTexturas[x,y,textura_base+1] = (1.0f-peso)/2; // Comentar para evitar el mezclado
+				//if (textura_base>1) pTexturas[x,y,textura_base-1] = (1.0f-peso)/2; // comentar para evitar el mezclado
 			}
 		}
 
@@ -124,8 +144,8 @@ public class MountainGenerator : MonoBehaviour {
 		int contCubosVerdes = 0;
 		int contCubosRojos = 0;
 		Vector3 posicion = new Vector3 (0, 0, 0);
-		for (int x = 0; x < terrainData.alphamapHeight - 10; x+= 5) {
-			for (int y = 0; y < terrainData.alphamapWidth - 10; y+=5) {
+		for (int x = SpaceBerweenCube; x < terrainData.heightmapHeight - SpaceBerweenCube; x+= SpaceBerweenCube) {
+			for (int y = SpaceBerweenCube; y < terrainData.heightmapWidth - SpaceBerweenCube; y+=SpaceBerweenCube) {
 
 				posicion = new Vector3 (x, terrainData.GetHeight (x, y), y);
 
@@ -195,9 +215,54 @@ public class MountainGenerator : MonoBehaviour {
 
 		Player = GameObject.Find ("RigidBodyFPSController");
 
-		Player.gameObject.transform.position = masterCube.gameObject.transform.position;
+		createDecoration ();
+
+		//Creamos el NavMesh para que los NPCs se muevan por el mapa
+		NavMeshBuilder.BuildNavMesh();
+
+		Vector3 playerPosition = new Vector3 (masterCube.gameObject.transform.position.x, masterCube.gameObject.transform.position.y + 50.0f, masterCube.gameObject.transform.position.z);
+		Player.gameObject.transform.position = playerPosition;
 		Player.SetActive (true);
 
 	}//scannerMap() 
 
+	void createDecoration(){
+		
+		int numTree = 0;
+		int cont = 0;
+		int randomIndex = 0;
+
+		switch (sizeMap) {
+		case 257:
+			numTree = 150;
+			break;
+		case 513:
+			numTree = 300;
+			break;
+		case 1025:
+			numTree = 750;
+			break;
+		}
+
+		for (int i = 0; i < numTree; ++i) {
+
+			randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+			cont = 0;
+
+			foreach (GameObject box in listGreenBox) {
+				if (randomIndex == cont) {
+					randomIndex = Random.Range (0, GlobalObject.sizeTree());
+					//Bajamos la posicion del arbol para que en las cuestas la raiz atraviese el suelo y no quede levitando
+					Vector3 newPosition = new Vector3 (box.transform.position.x, box.transform.position.y - 1.0f, box.transform.position.z);
+					GameObject aux = Instantiate (GlobalObject.GetTree (randomIndex), newPosition, box.transform.rotation) as GameObject;
+					listGreenBox.Remove (box);
+					break;
+				} else {
+					++cont;
+				}
+			}
+
+		}
+
+	}
 }
