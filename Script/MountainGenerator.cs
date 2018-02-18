@@ -1,7 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.AI;
+//#if UNITY_EDITOR
+//using UnityEditor.AI;
+//#endif
+using UnityEngine.AI;
 
 public class MountainGenerator : MonoBehaviour {
 
@@ -9,9 +12,18 @@ public class MountainGenerator : MonoBehaviour {
 	private List<GameObject> listGreenBox; //Lista donde se almacenan las casillas validas
 	private int SpaceBerweenCube = 10;
 	private int sizeMap;
+	private float valencia;
+	private float excitacion;
+	private float dominio;
+	private float suspense;
+	private int numCofres;
 
-	public GameObject Player;
+	private GameObject Player;
 	public GameObject Map;
+	public GameObject Whale;
+	public GameObject Municion;
+	public GameObject cofre;
+	public GameObject testCofre;
 
 	public int perlinPasses = 1;
 	public int perlinScaleRangex = 2; 
@@ -48,11 +60,21 @@ public class MountainGenerator : MonoBehaviour {
 		Debug.Log (terrainMap.terrainData.heightmapWidth);
 
 		GenerateHeightmap ();
-		//PaintMap ();
+		PaintMap ();
 
 		this.gameObject.isStatic = true;
 
+		this.gameObject.SetActive (false);
+		this.gameObject.SetActive (true);
+
 		scannerMap ();
+
+		createDecoration ();
+
+		putElement ();
+
+
+		Player.SetActive (true);
 	}
 
 	void PerlinPass(float[,] heights, float perlinPasses) {
@@ -94,22 +116,22 @@ public class MountainGenerator : MonoBehaviour {
 
 		float max_altura = 0;
 
-		for (int y = 0; y < terrainData.heightmapHeight; y++){
-			for (int x = 0; x < terrainData.heightmapWidth; x++){
+		for (int y = 0; y < terrainData.alphamapHeight; y++){
+			for (int x = 0; x < terrainData.alphamapWidth; x++){
 				float height = terrainData.GetHeight(y,x);
 				if (height>max_altura) max_altura = height;
 			}
 		}
 
-		float[, ,] pTexturas= new float[terrainData.heightmapWidth, terrainData.heightmapHeight, terrainData.alphamapLayers];
+		float[, ,] pTexturas= new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
 
 		float amplitud = max_altura/terrainData.alphamapLayers; 
 
 		float altura = 0.0f;
 		float peso = 0.0f;
 
-		for (int y = 0; y < terrainData.heightmapHeight; y++) {
-			for (int x = 0; x < terrainData.heightmapWidth; x++) {
+		for (int y = 0; y < terrainData.alphamapHeight; y++) {
+			for (int x = 0; x < terrainData.alphamapWidth; x++) {
 
 				altura = terrainData.GetHeight(y,x);
 
@@ -127,8 +149,8 @@ public class MountainGenerator : MonoBehaviour {
 					peso = 0.5f;
 
 				pTexturas[x,y,textura_base] = peso;
-				//if (textura_base<terrainData.alphamapLayers-1) pTexturas[x,y,textura_base+1] = (1.0f-peso)/2; // Comentar para evitar el mezclado
-				//if (textura_base>1) pTexturas[x,y,textura_base-1] = (1.0f-peso)/2; // comentar para evitar el mezclado
+				if (textura_base<terrainData.alphamapLayers-1) pTexturas[x,y,textura_base+1] = (1.0f-peso)/2; // Comentar para evitar el mezclado
+				if (textura_base>1) pTexturas[x,y,textura_base-1] = (1.0f-peso)/2; // comentar para evitar el mezclado
 			}
 		}
 
@@ -144,6 +166,10 @@ public class MountainGenerator : MonoBehaviour {
 		int contCubosVerdes = 0;
 		int contCubosRojos = 0;
 		Vector3 posicion = new Vector3 (0, 0, 0);
+
+		GameObject boxParent = new GameObject();
+		boxParent.name = "BoxParent";
+
 		for (int x = SpaceBerweenCube; x < terrainData.heightmapHeight - SpaceBerweenCube; x+= SpaceBerweenCube) {
 			for (int y = SpaceBerweenCube; y < terrainData.heightmapWidth - SpaceBerweenCube; y+=SpaceBerweenCube) {
 
@@ -151,12 +177,14 @@ public class MountainGenerator : MonoBehaviour {
 
 				if (terrainData.GetHeight (x, y) > limitHeight) {
 					GameObject box = Instantiate (redCube, posicion, transform.rotation) as GameObject;
+					box.transform.parent = boxParent.transform;
 					box.GetComponent<GreenCube> ().setName (x,y);
 					box.GetComponent<GreenCube> ().setMap (terrainData);
 					box.GetComponent<GreenCube> ().valid = false;
 					contCubosRojos++;
 				} else {
 					GameObject box = Instantiate (greenCube, posicion, transform.rotation) as GameObject;
+					box.transform.parent = boxParent.transform;
 					box.GetComponent<GreenCube> ().setName (x,y);
 					box.GetComponent<GreenCube> ().setMap (terrainData);
 					listGreenBox.Add(box);
@@ -171,19 +199,19 @@ public class MountainGenerator : MonoBehaviour {
 		Debug.Log ("Casillas totales: " + total + ". Casillas validas: " + contCubosVerdes + ". Casillas no validas: " + contCubosRojos);
 		Debug.Log ("El porcentaje de terreno jugable es del "+porcientoAcierto+" %");
 
-		//Si no hay mas de un 60% del terreno jugable, se genera otro terreno y se borra el actual
-		/*if (porcientoAcierto < 60) {
-
-			GameObject MapGenerate = Instantiate (Map, transform.position, transform.rotation) as GameObject;
-			Destroy (this.gameObject);
-		}*/
+		if (porcientoAcierto >= 60) {
+			Debug.Log ("Terreno jugable superior al 60% ? PASS");
+		} else {
+			Debug.Log ("Terreno jugable superior al 60% ? FAIL");
+		}
+			
 
 		//Calculamos las casillas validas que hay alrededor de cada casilla valida
 		foreach (GameObject cube in listGreenBox){
 
 			cube.GetComponent<GreenCube> ().CalcDistance ();
 
-			Debug.Log(cube.GetComponent<GreenCube> ().ToString ());
+			//Debug.Log(cube.GetComponent<GreenCube> ().ToString ());
 		}
 
 		//Buscamos la casilla maestra
@@ -198,31 +226,43 @@ public class MountainGenerator : MonoBehaviour {
 		foreach (GameObject cube in listGreenBox) {
 
 			sum = cube.GetComponent<GreenCube> ().top + cube.GetComponent<GreenCube> ().down + cube.GetComponent<GreenCube> ().left + cube.GetComponent<GreenCube> ().right;
-			resx = Mathf.Abs(cube.GetComponent<GreenCube> ().left - cube.GetComponent<GreenCube> ().right);
-			resy = Mathf.Abs(cube.GetComponent<GreenCube> ().top - cube.GetComponent<GreenCube> ().down);
+			resx = Mathf.Abs (cube.GetComponent<GreenCube> ().left - cube.GetComponent<GreenCube> ().right);
+			resy = Mathf.Abs (cube.GetComponent<GreenCube> ().top - cube.GetComponent<GreenCube> ().down);
 
-			if (sum > sumValores && resx < resValoresx && resy < resValoresy) {
+			/*if (sum > sumValores && resx < resValoresx && resy < resValoresy) {
 
 				sumValores = sum;
 				resValoresx = resx;
 				resValoresy = resy;
 				masterCube = cube;
+			}*/
+
+			if (sum > sumValores) {
+				
+				sumValores = sum;
+				resValoresx = resx;
+				resValoresy = resy;
+				masterCube = cube;
+
+			} else if (sum == sumValores) {
+				if (resx < resValoresx && resy < resValoresy) {
+					sumValores = sum;
+					resValoresx = resx;
+					resValoresy = resy;
+					masterCube = cube;
+				}
 			}
 		}
 
-		Debug.Log("CASILLA MASTER:");
-		Debug.Log (masterCube.GetComponent<GreenCube> ().ToString ());
+		//eliminamos la posición del usuario de la lista de casillas disponibles
+		listGreenBox.Remove (masterCube);
 
-		Player = GameObject.Find ("RigidBodyFPSController");
+		//Debug.Log("CASILLA MASTER:");
+		//Debug.Log (masterCube.GetComponent<GreenCube> ().ToString ());
 
-		createDecoration ();
+		Player = GlobalObject.GetPlayer ();
 
-		//Creamos el NavMesh para que los NPCs se muevan por el mapa
-		NavMeshBuilder.BuildNavMesh();
 
-		Vector3 playerPosition = new Vector3 (masterCube.gameObject.transform.position.x, masterCube.gameObject.transform.position.y + 50.0f, masterCube.gameObject.transform.position.z);
-		Player.gameObject.transform.position = playerPosition;
-		Player.SetActive (true);
 
 	}//scannerMap() 
 
@@ -235,15 +275,22 @@ public class MountainGenerator : MonoBehaviour {
 		switch (sizeMap) {
 		case 257:
 			numTree = 150;
+			numCofres = 3;
 			break;
 		case 513:
 			numTree = 300;
+			numCofres = 6;
 			break;
 		case 1025:
 			numTree = 750;
+			numCofres = 10;
 			break;
 		}
 
+		GameObject treeParent = new GameObject();
+		treeParent.name = "Arboles";
+
+		//Colocamos aleatoriamente arboles en el mapa
 		for (int i = 0; i < numTree; ++i) {
 
 			randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
@@ -255,6 +302,7 @@ public class MountainGenerator : MonoBehaviour {
 					//Bajamos la posicion del arbol para que en las cuestas la raiz atraviese el suelo y no quede levitando
 					Vector3 newPosition = new Vector3 (box.transform.position.x, box.transform.position.y - 1.0f, box.transform.position.z);
 					GameObject aux = Instantiate (GlobalObject.GetTree (randomIndex), newPosition, box.transform.rotation) as GameObject;
+					aux.transform.parent = treeParent.transform;
 					listGreenBox.Remove (box);
 					break;
 				} else {
@@ -264,5 +312,339 @@ public class MountainGenerator : MonoBehaviour {
 
 		}
 
+		//Creamos el NavMesh para que los NPCs se muevan por el mapa
+		//NavMeshBuilder.BuildNavMesh();
+
+		GameObject NavMesh = GlobalObject.GetNavMesh();
+		NavMesh.GetComponent<NavMeshSurface> ().BuildNavMesh ();
+
+
+	}//createDecoration()
+
+	void putElement (){
+
+		valencia = PlayerPrefs.GetFloat ("Valencia");
+		excitacion = PlayerPrefs.GetFloat ("Excitacion");
+		dominio = PlayerPrefs.GetFloat ("Dominio");
+
+		suspense = PlayerPrefs.GetFloat ("Suspense");
+		int randomIndex, cont, numSuspense, numMunicion = 0;
+
+		Light luzGlobal = Player.GetComponent<lightPlayerController> ().getLuzGlobal();
+
+		if (suspense >= 0.9) {
+			Light linterna = Player.GetComponent<lightPlayerController> ().getLinterna ();
+			linterna.gameObject.SetActive (true);
+			GlobalObject.getCanvasMiniMap ().gameObject.SetActive (false);
+
+			luzGlobal.gameObject.SetActive (false);
+			GlobalObject.fondoNegroCamara ();
+			numSuspense = 4;
+
+			//Colocamos al depredador en una posicion aleatoria
+
+			randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+			cont = 0;
+
+			foreach (GameObject box in listGreenBox) {
+				if (randomIndex == cont) {
+					//Bajamos la posicion del arbol para que en las cuestas la raiz atraviese el suelo y no quede levitando
+					//Vector3 newPosition = new Vector3 (box.transform.position.x, box.transform.position.y - 1.0f, box.transform.position.z);
+					GameObject aux = Instantiate (Whale, box.gameObject.transform.position, Whale.transform.rotation) as GameObject;
+					aux.GetComponent<IAwhale> ().Player = Player;
+					listGreenBox.Remove (box);
+					break;
+				} else {
+					++cont;
+				}
+			}
+
+		} else {
+
+			if (suspense >= 0.5) {
+				Light linterna = Player.GetComponent<lightPlayerController> ().getLinterna ();
+				linterna.gameObject.SetActive (true);
+				luzGlobal.gameObject.transform.Rotate (135, 0, 0, Space.World);
+				numSuspense = 3;
+			} else if (suspense >= 0.25) {
+				Light linterna = Player.GetComponent<lightPlayerController> ().getLinterna ();
+				linterna.gameObject.SetActive (true);
+				luzGlobal.gameObject.transform.Rotate (120, 0, 0, Space.World);
+				numSuspense = 2;
+			} else {
+				luzGlobal.gameObject.transform.Rotate(40, 0, 0,Space.World);
+				GlobalObject.encenderLuzAuxiliar ();
+				numSuspense = 1;
+			}
+
+			//Colocamos elementos de suspense
+
+			GameObject SuspenseElements = new GameObject();
+			SuspenseElements.name = "ElementosDeSuspense";
+
+			for (int i = 0; i < numSuspense; ++i) {
+
+				randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+				cont = 0;
+
+				foreach (GameObject box in listGreenBox) {
+					if (randomIndex == cont) {
+						randomIndex = Random.Range (0, GlobalObject.sizeSuspense ());
+						//Bajamos la posicion del arbol para que en las cuestas la raiz atraviese el suelo y no quede levitando
+						//Vector3 newPosition = new Vector3 (box.transform.position.x, box.transform.position.y - 1.0f, box.transform.position.z);
+						GameObject aux = Instantiate (GlobalObject.GetSuspense (randomIndex), box.gameObject.transform.position, GlobalObject.GetSuspense (randomIndex).transform.rotation) as GameObject;
+						aux.transform.parent = SuspenseElements.transform;
+						listGreenBox.Remove (box);
+						break;
+					} else {
+						++cont;
+					}
+				}
+
+			}//for suspense
+
+			//DOMINIO
+			if (dominio >= 0.75) {
+
+				GlobalObject.inmortal = true;
+				GlobalObject.GlobalLifeText.text = "Inmortal";
+
+			} else if (dominio >= 0.5) {
+
+				GlobalObject.IconoEnemigos = false;
+				GlobalObject.setLivePlayer (1000);
+
+			} else if (dominio >= 0.25) {
+				GlobalObject.setLivePlayer (500);
+				GlobalObject.getCanvasMiniMap ().gameObject.SetActive (false);
+			} else {
+				GlobalObject.setLivePlayer (100);
+				GlobalObject.getCanvasMiniMap ().gameObject.SetActive (false);
+			}//dominio
+
+			//EXCITACION
+			if (excitacion >= 0.75) {
+
+				Player.GetComponent<gunsController> ().activaArmaGrande ();
+
+			} else if (excitacion >= 0.5) {
+
+				Player.GetComponent<gunsController> ().activaArmaMediana ();
+				//Player.GetComponent<gunsController> ().ponerMunicion(200);
+				numMunicion = 30;
+
+			} else if (excitacion >= 0.25) {
+				Player.GetComponent<gunsController> ().activaArmaPequenia ();
+				//Player.GetComponent<gunsController> ().ponerMunicion(100);
+				numMunicion = 10;
+			} else {
+				//Sin armas
+			}//excitacion
+
+
+			GameObject GrupoMunicion = new GameObject();
+			GrupoMunicion.name = "Municion";
+
+			//Si el jugador tiene armas que necesitan municion 
+			if (excitacion < 0.75 && excitacion >= 0.25) {
+
+				for (int i = 0; i < numMunicion; ++i) {
+
+					randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+					cont = 0;
+
+					foreach (GameObject box in listGreenBox) {
+						if (randomIndex == cont) {
+							GameObject aux = Instantiate (Municion, box.gameObject.transform.position, box.transform.rotation) as GameObject;
+							aux.transform.parent = GrupoMunicion.transform;
+							listGreenBox.Remove (box);
+							break;
+						} else {
+							++cont;
+						}
+					}
+
+				}
+			}
+
+
+			//VALENCIA
+			int numRandom = (int)Random.Range (5, 20);
+
+			GameObject Animals = new GameObject();
+			Animals.name = "Animales";
+
+			GameObject Enemigos = new GameObject();
+			Enemigos.name = "Enemigos";
+
+			if (valencia >= 0.75) {
+
+				//Colocamos aleatoriamente animales en el mapa
+				for (int i = 0; i < numRandom; ++i) {
+
+					randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+					cont = 0;
+
+					foreach (GameObject box in listGreenBox) {
+						if (randomIndex == cont) {
+							randomIndex = Random.Range (0, GlobalObject.sizeAnimal ());
+							//Bajamos la posicion del arbol para que en las cuestas la raiz atraviese el suelo y no quede levitando
+							//Vector3 newPosition = new Vector3 (box.transform.position.x, box.transform.position.y - 1.0f, box.transform.position.z);
+							GameObject aux = Instantiate (GlobalObject.GetAnimal (randomIndex), box.transform.position, box.transform.rotation) as GameObject;
+							aux.transform.parent = Animals.transform;
+							listGreenBox.Remove (box);
+							break;
+						} else {
+							++cont;
+						}
+					}
+
+				}
+
+			} else if (valencia >= 0.5) {
+
+				for (int i = 0; i < numRandom; ++i) {
+
+					randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+					cont = 0;
+
+					foreach (GameObject box in listGreenBox) {
+						if (randomIndex == cont) {
+							randomIndex = Random.Range (0, GlobalObject.sizeEnemigos ());
+
+							GameObject aux = Instantiate (GlobalObject.GetEnemigos (randomIndex), box.transform.position, box.transform.rotation) as GameObject;
+							aux.transform.parent = Enemigos.transform;
+							listGreenBox.Remove (box);
+							break;
+						} else {
+							++cont;
+						}
+					}
+
+				}
+
+			} else if (valencia >= 0.25) {
+			
+				for (int i = 0; i < numRandom; ++i) {
+
+					randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+					cont = 0;
+
+					foreach (GameObject box in listGreenBox) {
+						if (randomIndex == cont) {
+							randomIndex = Random.Range (0, GlobalObject.sizeEnemigos ());
+
+							GameObject aux = Instantiate (GlobalObject.GetEnemigos (randomIndex), box.transform.position, box.transform.rotation) as GameObject;
+							aux.transform.parent = Enemigos.transform;
+							listGreenBox.Remove (box);
+							break;
+						} else {
+							++cont;
+						}
+					}
+
+				}
+
+			} else {
+				
+				for (int i = 0; i < numRandom; ++i) {
+
+					randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+					cont = 0;
+
+					foreach (GameObject box in listGreenBox) {
+						if (randomIndex == cont) {
+							randomIndex = Random.Range (0, GlobalObject.sizeEnemigos ());
+
+							GameObject aux = Instantiate (GlobalObject.GetEnemigos (randomIndex), box.transform.position, box.transform.rotation) as GameObject;
+							aux.transform.parent = Enemigos.transform;
+							listGreenBox.Remove (box);
+							break;
+						} else {
+							++cont;
+						}
+					}
+
+				}
+
+				//Enemigos grandes
+				numRandom = (int)Random.Range (2, 5);
+
+				for (int i = 0; i < numRandom; ++i) {
+
+					randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+					cont = 0;
+
+					foreach (GameObject box in listGreenBox) {
+						if (randomIndex == cont) {
+							randomIndex = Random.Range (0, GlobalObject.sizeEnemigosGrandes ());
+
+							GameObject aux = Instantiate (GlobalObject.GetEnemigosGrandes (randomIndex), box.transform.position, box.transform.rotation) as GameObject;
+							aux.transform.parent = Enemigos.transform;
+							listGreenBox.Remove (box);
+							break;
+						} else {
+							++cont;
+						}
+					}
+
+				}
+
+			}//valencia
+
+		}//0.9 se suspense
+
+		Vector3 playerPosition = new Vector3 (masterCube.gameObject.transform.position.x, masterCube.gameObject.transform.position.y + 5.0f, masterCube.gameObject.transform.position.z);
+		Player.gameObject.transform.position = playerPosition;
+		GameObject testPlayerCofres = Instantiate (testCofre, masterCube.gameObject.transform.position, masterCube.gameObject.transform.rotation) as GameObject;
+		//Colocamos los cofres
+
+		int contadorCofres = 1;
+		GameObject Cofres = new GameObject();
+		Cofres.name = "Cofres";
+
+		for (int i = 0; i < numCofres; ++i) {
+
+			randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+			cont = 0;
+
+			foreach (GameObject box in listGreenBox) {
+				if (randomIndex == cont) {
+					GameObject cofreColocado = Instantiate (cofre, box.gameObject.transform.position, cofre.transform.rotation) as GameObject;
+					cofreColocado.transform.parent = Cofres.transform;
+					testPlayerCofres.GetComponent<testNacMeshJugadorCofres> ().getPosition (cofreColocado.transform.position, contadorCofres);
+					++contadorCofres;
+					listGreenBox.Remove (box);
+
+					//NavMeshVisualizationSettings.
+
+					break;
+				} else {
+					++cont;
+				}
+			}
+
+		}
+
+		//Destroy (testPlayerCofres.gameObject);
+	}//putElement()
+
+	public Vector3 GetPositionGreenCube(){
+
+		int randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+		int cont = 0;
+		Vector3 position = new Vector3();
+
+		foreach (GameObject box in listGreenBox) {
+			if (randomIndex == cont) {
+				position = box.transform.position;
+				break;
+
+			} else {
+				++cont;
+			}
+		}
+
+		return position;
 	}
 }

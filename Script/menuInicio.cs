@@ -14,17 +14,28 @@ public class menuInicio : MonoBehaviour {
 	public Scrollbar Excitacion;
 	public Scrollbar Dominio;
 
+	public Text ValenciaValue;
+	public Text ExcitacionValue;
+	public Text DominioValue;
+
 	public Text SuspenseValue;
 
 	private float suspense = 0.0f;
 
 	// Use this for initialization
-	void Start () {
+	void Awake () {
 
-		SuspenseValue.text = "0";
+		calcularNivelSuspense();
 
 		//Asinamos tamaño a mapa
 		tamañoMapa ();
+	}
+
+	void Update(){
+
+		ValenciaValue.text = Valencia.value.ToString ();
+		ExcitacionValue.text = Excitacion.value.ToString ();
+		DominioValue.text = Dominio.value.ToString ();
 	}
 
 	public void tamañoMapa(){

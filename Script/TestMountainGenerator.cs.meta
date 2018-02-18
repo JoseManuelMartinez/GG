@@ -1,16 +1,12 @@
 fileFormatVersion: 2
-guid: cd803309a8055604aaadaff09af69801
-timeCreated: 1517751019
+guid: 1d8909ad9d972f24e828d61ab586a169
+timeCreated: 1515335257
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
+  - Player: {instanceID: 0}
   - Map: {fileID: 1311289815427346, guid: 2c605fb679c2ef1428515a3947828356, type: 2}
-  - Whale: {fileID: 1772826152417136, guid: fce04129081b71f428cf128a83aa09a0, type: 2}
-  - Municion: {fileID: 1452618732612472, guid: ff8e7957dca0a3d4bafce3c916ef1aaa, type: 2}
-  - cofre: {fileID: 1199608620010750, guid: c3529f57aab904a4fb62f696ab848940, type: 2}
-  - testCofre: {fileID: 1269647183452804, guid: 3b0009df31f0e3346a3e5f08a24db0a2,
-      type: 2}
   - redCube: {fileID: 1805315069342470, guid: 844cd752c2e556048931056863de3dfc, type: 2}
   - greenCube: {fileID: 1291861836696574, guid: b050a60674b5e81419a6e2b06aec5773,
       type: 2}

@@ -5,7 +5,7 @@ using UnityEngine;
 public class shot : MonoBehaviour {
 
 	public float velocity = 2.0f;
-	public static int damage = 35;
+	public int damage = 35;
 
 	// Use this for initialization
 	void Start () {
@@ -17,6 +17,9 @@ public class shot : MonoBehaviour {
 
 		this.transform.Translate(Vector3.down * velocity * Time.deltaTime);
 	}
+
+	public void setDamage(int dam){damage = dam;}
+	public int getDamage(){return damage ;}
 
 	void OnTriggerEnter(Collider c){
 		if(c.gameObject.tag == "Enemy"){

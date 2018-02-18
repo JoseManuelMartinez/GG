@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 public class IAanimalCurioso : MonoBehaviour {
 
-	private Terrain map;
+	private GameObject map;
 	private NavMeshAgent agent;
 	private GameObject Player;
 	private Animator animator;
@@ -18,10 +18,11 @@ public class IAanimalCurioso : MonoBehaviour {
 	void Start () {
 
 		agent = GetComponent<NavMeshAgent> ();
-		map = GlobalObject.GetMap ();
+		agent.Warp(this.gameObject.transform.position);
+		map = GlobalObject.GetGameObjectMap ();
 		Player = GlobalObject.GetPlayer ();
 		animator = GetComponent<Animator> ();
-		destination = new Vector3 (Random.Range(0 , map.terrainData.heightmapWidth), 0 ,Random.Range(0, map.terrainData.heightmapHeight));
+		destination = map.GetComponent<MountainGenerator> ().GetPositionGreenCube ();
 	}
 	
 	void Update() {
@@ -37,7 +38,7 @@ public class IAanimalCurioso : MonoBehaviour {
 		}else {//Sino anda
 			agent.isStopped = false;
 			if (transform.position == destination) {
-				destination = new Vector3 (Random.Range (0, map.terrainData.heightmapWidth), 0, Random.Range (0, map.terrainData.heightmapHeight));
+				destination = map.GetComponent<MountainGenerator> ().GetPositionGreenCube ();
 				Debug.Log (destination);
 			}
 			animator.SetBool ("Idle", false);

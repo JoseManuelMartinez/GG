@@ -6,39 +6,40 @@ using UnityEngine.AI;
 public class IAenemigo : MonoBehaviour {
 
 	public GameObject Player;
-	private NavMeshAgent agent;
-	private Animator animator;
-
-	public float distance = 30;
+	public int life = 100;
+	private Animation animator;
+	public GameObject IconoEnemigo;
 
 	void Start(){
 
-		agent = GetComponent<NavMeshAgent> ();
-		animator = GetComponent<Animator> ();
+		animator = GetComponent<Animation> ();
+		Player = GlobalObject.GetPlayer ();
+
+		if (!GlobalObject.IconoEnemigos) {
+			IconoEnemigo.SetActive (false);
+		}
+
+		animator.Play ("idle");
 	}
-	// Update is called once per frame
-	void Update () {
-		
-		if(Vector3.Distance (Player.transform.position, transform.position) < distance){//Si ve al jugador
-			
-			Vector3 distancia = Player.transform.position - transform.position;
 
-			agent.SetDestination (Player.transform.position);
-			agent.speed = 3;
-			animator.SetBool ("isIdle",false);
-
-			if (distancia.magnitude <= agent.stoppingDistance ) { //Ataca
-				animator.SetBool ("isWalking", false);
-				animator.SetBool ("isAttacking", true);
-			} else { //Corre
-				animator.SetBool ("isWalking", true);
-				animator.SetBool ("isAttacking", false);
+	void OnTriggerEnter(Collider c){
+		if (c.gameObject.tag == "shot") {
+			life -= c.gameObject.GetComponent<shot>().getDamage();
+			if (life <= 0) {
+				animator.Play ("die");
+				Destroy (this.gameObject,1.0f);
 			}
-		} else {//Si esta lejos 
-			agent.speed = 0;
-			animator.SetBool ("isWalking",false);
-			animator.SetBool ("isAttacking",false);
-			animator.SetBool ("isIdle",true);
+		}
+
+		if (c.gameObject.tag == "Player") {
+			StartCoroutine (atack());
 		}
 	}
+
+	IEnumerator atack() {
+		animator.Play ("hit");
+		yield return new WaitForSeconds (1);
+		animator.Play ("idle");
+	}
+
 }

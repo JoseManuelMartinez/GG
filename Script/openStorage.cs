@@ -4,16 +4,22 @@ using UnityEngine;
 
 public class openStorage : MonoBehaviour {
 
-	private Animator animator;
+	public GameObject tapa;
+	public GameObject Icono;
+	private Animator animatorTapa;
 
 	void Start(){
-		animator = GetComponent<Animator> ();
+		animatorTapa = tapa.GetComponent<Animator> ();
+		GlobalObject.CofrePuesto ();
 	}
 
 	void OnTriggerEnter(Collider c){
 
 		if (c.gameObject.tag == "dedo") {
-			animator.SetBool ("Open", true);
+			animatorTapa.SetBool ("Open", true);
+			Icono.SetActive (false);
+			GlobalObject.cofreEncontrado ();
+			Destroy (this.gameObject);
 		}
 	}
 }
