@@ -62,6 +62,13 @@ public class GlobalObject : MonoBehaviour {
 	public Text cofreText; 
 	public static Text GlobalcofreText; 
 
+	//Mano Izquierda
+	private static GameObject GlobalHandL;
+	public GameObject HandL;
+	private static GameObject GlobalCapsuleHandL;
+	public GameObject CapsuleHandL;
+	public GameObject HandController;
+
 	void Awake(){
 		//Mapa = Map.GetComponent<Terrain> ();
 		GlobalPlayer = Player;
@@ -70,6 +77,7 @@ public class GlobalObject : MonoBehaviour {
 		prefabsElementosAnimales = elementosAnimales;
 		prefabsElementosEnemigos = elementosEnemigos;
 		prefabsElementosEnemigosGrandes = elementosEnemigosGrandes;
+		inmortal = false;
 
 		GlobalNavMesh = NavMesh;
 		GlobalCamara = Camara;
@@ -81,6 +89,15 @@ public class GlobalObject : MonoBehaviour {
 		lifeText.text = GlobalLifePlayer.ToString(); 
 		cofresTotales = 0;
 		cofresEncontrados = 0;
+
+		GlobalHandL = HandL;
+		GlobalCapsuleHandL = CapsuleHandL;
+	}
+
+	public static void deleteHandL(){
+		Destroy (GlobalHandL);Destroy (GlobalCapsuleHandL); 
+		GlobalHandL = new GameObject();
+		GlobalCapsuleHandL = new GameObject ();
 	}
 
 	public static GameObject GetNavMesh(){return GlobalNavMesh; }	
@@ -112,6 +129,8 @@ public class GlobalObject : MonoBehaviour {
 
 	public static void encenderLuzAuxiliar(){GlobalLuzAuxiliar.SetActive (true);}
 
+
+
 	public static void fondoNegroCamara(){
 		GlobalCamara.GetComponent<Camera> ().clearFlags = CameraClearFlags.SolidColor;
 	}
@@ -124,9 +143,9 @@ public class GlobalObject : MonoBehaviour {
 			GlobalLifeText.text = "0 Vida";
 			if (GlobalLifePlayer <= 0) {
 				endGame ();
+			} else {
+				GlobalLifeText.text = GlobalLifePlayer.ToString () + " Vida";
 			}
-
-			GlobalLifeText.text = GlobalLifePlayer.ToString () + " Vida";
 
 		}
 	}

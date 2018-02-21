@@ -11,12 +11,17 @@ public class gun : MonoBehaviour {
 	private int municion = 66;
 	public Text textoMunición;
 
+	private AudioSource source;
+	public AudioClip reloadSound;
+	public float volumenReloadSound = 0.5f;
+
 	void Start(){
 		if (!municiónIlimitada) {
 			textoMunición.text = municion + " Municion";
 		} else {
 			textoMunición.text = "";
 		}
+		source = GetComponent<AudioSource> ();
 	}
 
 	// Update is called once per frame
@@ -41,6 +46,7 @@ public class gun : MonoBehaviour {
 
 	void OnTriggerEnter(Collider c){
 		if (c.gameObject.tag == "municion") {
+			source.PlayOneShot (reloadSound, volumenReloadSound);
 			municion += 20;
 			textoMunición.text = municion+" Municion";
 			Destroy (c.gameObject);

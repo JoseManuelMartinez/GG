@@ -19,10 +19,16 @@ public class IAdragon : MonoBehaviour {
 	void OnTriggerEnter(Collider c){
 
 		if (c.gameObject.tag == "Player") {
+
+			int x = (int)Random.Range (0, map.terrainData.heightmapWidth);
+			int z = (int)Random.Range (0, map.terrainData.heightmapHeight);
+			Vector3 destination = new Vector3 (x, map.terrainData.GetHeight(x,z), z);
+			agent.Warp (this.gameObject.transform.position);
+			agent.SetDestination (destination);	
+
 			animator.SetBool ("fly", true);
 			Destroy (this.gameObject,30.0f);
-			Vector3 destination = new Vector3 (Random.Range(0,map.terrainData.heightmapWidth), 0, Random.Range(0,map.terrainData.heightmapHeight));
-			agent.SetDestination (destination);
+
 			//Debug.Log(map.terrainData.heightmapWidth +" - "+ map.terrainData.heightmapHeight);
 		}
 	}

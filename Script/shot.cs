@@ -7,8 +7,14 @@ public class shot : MonoBehaviour {
 	public float velocity = 2.0f;
 	public int damage = 35;
 
+	private AudioSource source;
+	public AudioClip shotSound;
+	public float volumenShotSound = 0.5f;
+
 	// Use this for initialization
 	void Start () {
+		source = GetComponent<AudioSource> ();
+		StartCoroutine (shotSoundRutine ());
 		Destroy (this.gameObject,10);
 	}
 	
@@ -25,5 +31,13 @@ public class shot : MonoBehaviour {
 		if(c.gameObject.tag == "Enemy"){
 			Destroy (this.gameObject);
 		}
+	}
+
+	IEnumerator shotSoundRutine(){
+		source.PlayOneShot (shotSound, volumenShotSound);
+		yield return new WaitForSeconds (0);
+		//source.Stop ();
+		//yield return new WaitForSeconds (2);
+
 	}
 }

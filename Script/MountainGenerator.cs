@@ -10,6 +10,7 @@ public class MountainGenerator : MonoBehaviour {
 
 	private TerrainData terrainData;
 	private List<GameObject> listGreenBox; //Lista donde se almacenan las casillas validas
+	private bool listGreenBoxCreated = false;
 	private int SpaceBerweenCube = 10;
 	private int sizeMap;
 	private float valencia;
@@ -139,9 +140,9 @@ public class MountainGenerator : MonoBehaviour {
 
 				if (textura_base>terrainData.alphamapLayers-1) textura_base = terrainData.alphamapLayers-1;
 
-				/*pTexturas[x,y,textura_base] = peso;
+				pTexturas[x,y,textura_base] = peso;
 				if (textura_base<terrainData.alphamapLayers-1) pTexturas[x,y,textura_base+1] = (1.0f-peso)/2; // Comentar para evitar el mezclado
-				if (textura_base>1) pTexturas[x,y,textura_base-1] = (1.0f-peso)/2; // comentar para evitar el mezclado*/
+				if (textura_base>1) pTexturas[x,y,textura_base-1] = (1.0f-peso)/2; // comentar para evitar el mezclado
 
 				if (altura > limit * 2)
 					peso = Random.Range (0.3f, 0.4f);
@@ -192,6 +193,8 @@ public class MountainGenerator : MonoBehaviour {
 				}
 			}
 		}
+
+		listGreenBoxCreated = true;
 
 		int total = contCubosRojos + contCubosVerdes;
 		int porcientoAcierto = contCubosVerdes * 100 / total;
@@ -336,8 +339,10 @@ public class MountainGenerator : MonoBehaviour {
 			Light linterna = Player.GetComponent<lightPlayerController> ().getLinterna ();
 			linterna.gameObject.SetActive (true);
 			GlobalObject.getCanvasMiniMap ().gameObject.SetActive (false);
-
+			//luzGlobal.gameObject.transform.Rotate (230, 0, 0, Space.World);
+			//luzGlobal.gameObject.GetComponent<Light> ().intensity = 0.1f;
 			luzGlobal.gameObject.SetActive (false);
+
 			GlobalObject.fondoNegroCamara ();
 			numSuspense = 4;
 
@@ -426,17 +431,20 @@ public class MountainGenerator : MonoBehaviour {
 			if (excitacion >= 0.75) {
 
 				Player.GetComponent<gunsController> ().activaArmaGrande ();
+				GlobalObject.deleteHandL ();
 
 			} else if (excitacion >= 0.5) {
 
 				Player.GetComponent<gunsController> ().activaArmaMediana ();
-				//Player.GetComponent<gunsController> ().ponerMunicion(200);
+				Player.GetComponent<gunsController> ().ponerMunicion(300);
 				numMunicion = 30;
+				GlobalObject.deleteHandL ();
 
 			} else if (excitacion >= 0.25) {
 				Player.GetComponent<gunsController> ().activaArmaPequenia ();
-				//Player.GetComponent<gunsController> ().ponerMunicion(100);
+				Player.GetComponent<gunsController> ().ponerMunicion(100);
 				numMunicion = 10;
+				GlobalObject.deleteHandL ();
 			} else {
 				//Sin armas
 			}//excitacion
@@ -594,7 +602,7 @@ public class MountainGenerator : MonoBehaviour {
 
 		}//0.9 se suspense
 
-		Vector3 playerPosition = new Vector3 (masterCube.gameObject.transform.position.x, masterCube.gameObject.transform.position.y + 5.0f, masterCube.gameObject.transform.position.z);
+		Vector3 playerPosition = new Vector3 (masterCube.gameObject.transform.position.x, masterCube.gameObject.transform.position.y + 1.0f, masterCube.gameObject.transform.position.z);
 		Player.gameObject.transform.position = playerPosition;
 		GameObject testPlayerCofres = Instantiate (testCofre, masterCube.gameObject.transform.position, masterCube.gameObject.transform.rotation) as GameObject;
 		//Colocamos los cofres
@@ -631,17 +639,21 @@ public class MountainGenerator : MonoBehaviour {
 
 	public Vector3 GetPositionGreenCube(){
 
-		int randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
-		int cont = 0;
-		Vector3 position = new Vector3();
+		Vector3 position = new Vector3 ();
 
-		foreach (GameObject box in listGreenBox) {
-			if (randomIndex == cont) {
-				position = box.transform.position;
-				break;
+		if (listGreenBoxCreated) {
+			int randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
+			int cont = 0;
 
-			} else {
-				++cont;
+
+			foreach (GameObject box in listGreenBox) {
+				if (randomIndex == cont) {
+					position = box.transform.position;
+					break;
+
+				} else {
+					++cont;
+				}
 			}
 		}
 

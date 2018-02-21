@@ -25,7 +25,7 @@ public class IAwhale : MonoBehaviour {
 			Vector3 distancia = Player.transform.position - transform.position;
 
 			agent.SetDestination (Player.transform.position);
-			agent.speed = 3;
+			//agent.speed = 3;
 			animator.SetBool ("isIdle",false);
 
 			if (distancia.magnitude <= agent.stoppingDistance ) { //Ataca

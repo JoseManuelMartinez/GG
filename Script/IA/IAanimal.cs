@@ -22,11 +22,13 @@ public class IAanimal : MonoBehaviour {
 	IEnumerator walkingAnimal() {
 
 		while (true) {
-			Vector3 destination = mapa.GetComponent<MountainGenerator> ().GetPositionGreenCube ();
-			//Vector3 destination = new Vector3 (Random.Range (0, map.terrainData.heightmapWidth), 0, Random.Range (0, map.terrainData.heightmapHeight));
+			//Vector3 destination = mapa.GetComponent<MountainGenerator> ().GetPositionGreenCube ();
+			int x = (int)Random.Range (0, map.terrainData.heightmapWidth);
+			int z = (int)Random.Range (0, map.terrainData.heightmapHeight);
+			Vector3 destination = new Vector3 (x, map.terrainData.GetHeight(x,z), z);
 			agent.Warp (this.gameObject.transform.position);
 			agent.SetDestination (destination);			
-			yield return new WaitForSeconds (5);
+			yield return new WaitForSeconds (10);
 		}
 
 	}
