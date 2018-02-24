@@ -22,6 +22,8 @@ public class menuInicio : MonoBehaviour {
 
 	private float suspense = 0.0f;
 
+	public Canvas canvas;
+
 	// Use this for initialization
 	void Awake () {
 
@@ -50,6 +52,8 @@ public class menuInicio : MonoBehaviour {
 	}
 
 	public void StartGame(){
+
+		canvas.gameObject.SetActive (false);
 
 		PlayerPrefs.SetFloat ("Valencia", Valencia.value);
 		PlayerPrefs.SetFloat ("Excitacion", Excitacion.value);

@@ -150,6 +150,8 @@ public class GlobalObject : MonoBehaviour {
 		}
 	}
 
+	public static void notTextLivePlayer(){GlobalLifeText.text ="";}
+
 	//public static void setCantidadCofres(int cantidad){cofresTotales = cantidad;}
 	public static void CofrePuesto(){
 		++cofresTotales;

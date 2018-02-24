@@ -17,7 +17,7 @@ public class IAanimalCurioso : MonoBehaviour {
 	public float distance = 2.0f;
 	public float velocidad = 2.0f;
 	public AudioClip animalSound;
-	public float volumenAnimalSound = 0.5f;
+	public float volumenAnimalSound = 1.0f;
 
 
 	// Use this for initialization
@@ -81,7 +81,7 @@ public class IAanimalCurioso : MonoBehaviour {
 	}
 
 	IEnumerator startAnimalSound(){
-		source.PlayOneShot (animalSound, volumenAnimalSound);
+		source.PlayOneShot(animalSound, volumenAnimalSound);
 		yield return new WaitForSeconds (1);
 		source.Stop ();
 		yield return new WaitForSeconds (2);

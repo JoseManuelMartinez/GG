@@ -18,6 +18,7 @@ public class MountainGenerator : MonoBehaviour {
 	private float dominio;
 	private float suspense;
 	private int numCofres;
+	private GameObject NavMesh;
 
 	private GameObject Player;
 	public GameObject Map;
@@ -25,6 +26,7 @@ public class MountainGenerator : MonoBehaviour {
 	public GameObject Municion;
 	public GameObject cofre;
 	public GameObject testCofre;
+	public GameObject esquina;
 
 	public int perlinPasses = 1;
 	public int perlinScaleRangex = 2; 
@@ -48,11 +50,17 @@ public class MountainGenerator : MonoBehaviour {
 		//Leemos tamaño del mapa que se eligió en el menu
 		sizeMap = PlayerPrefs.GetInt("TamanioMapa");
 		terrainData.heightmapResolution = sizeMap;
+		terrainData.alphamapResolution = sizeMap;
+		//Movemos las paredes para que el jugador no caiga por los bordes
+		Vector3 posiciónEsquina = new Vector3(sizeMap,0,sizeMap);
+		esquina.transform.position = posiciónEsquina;
+
 		//terrainData.
 		Terrain terrainMap = this.GetComponent<Terrain>();
 		Vector3 sizeVector = new Vector3 (sizeMap, 300, sizeMap);
 		terrainMap.terrainData.size = sizeVector;
 		GlobalObject.SetMap (terrainMap);
+
 
 		Debug.Log ("TERRAIN DATA");
 		Debug.Log (terrainMap.terrainData.alphamapHeight);
@@ -318,7 +326,8 @@ public class MountainGenerator : MonoBehaviour {
 		//Creamos el NavMesh para que los NPCs se muevan por el mapa
 		//NavMeshBuilder.BuildNavMesh();
 
-		GameObject NavMesh = GlobalObject.GetNavMesh();
+		NavMesh = GlobalObject.GetNavMesh();
+		NavMesh.GetComponent<NavMeshSurface> ().buildHeightMesh = true;
 		NavMesh.GetComponent<NavMeshSurface> ().BuildNavMesh ();
 
 
@@ -339,8 +348,7 @@ public class MountainGenerator : MonoBehaviour {
 			Light linterna = Player.GetComponent<lightPlayerController> ().getLinterna ();
 			linterna.gameObject.SetActive (true);
 			GlobalObject.getCanvasMiniMap ().gameObject.SetActive (false);
-			//luzGlobal.gameObject.transform.Rotate (230, 0, 0, Space.World);
-			//luzGlobal.gameObject.GetComponent<Light> ().intensity = 0.1f;
+			GlobalObject.notTextLivePlayer ();
 			luzGlobal.gameObject.SetActive (false);
 
 			GlobalObject.fondoNegroCamara ();
@@ -388,13 +396,17 @@ public class MountainGenerator : MonoBehaviour {
 			SuspenseElements.name = "ElementosDeSuspense";
 
 			for (int i = 0; i < numSuspense; ++i) {
-
+				
 				randomIndex = (int)Random.Range (0, listGreenBox.Count - 1);
 				cont = 0;
 
 				foreach (GameObject box in listGreenBox) {
 					if (randomIndex == cont) {
-						randomIndex = Random.Range (0, GlobalObject.sizeSuspense ());
+						//if (sizeMap == 257) {
+						//	randomIndex = Random.Range (0, GlobalObject.sizeSuspense () - 1);
+						//} else {
+							randomIndex = Random.Range (0, GlobalObject.sizeSuspense ());
+						//}
 						//Bajamos la posicion del arbol para que en las cuestas la raiz atraviese el suelo y no quede levitando
 						//Vector3 newPosition = new Vector3 (box.transform.position.x, box.transform.position.y - 1.0f, box.transform.position.z);
 						GameObject aux = Instantiate (GlobalObject.GetSuspense (randomIndex), box.gameObject.transform.position, GlobalObject.GetSuspense (randomIndex).transform.rotation) as GameObject;
@@ -497,7 +509,7 @@ public class MountainGenerator : MonoBehaviour {
 						if (randomIndex == cont) {
 							randomIndex = Random.Range (0, GlobalObject.sizeAnimal ());
 							//Bajamos la posicion del arbol para que en las cuestas la raiz atraviese el suelo y no quede levitando
-							//Vector3 newPosition = new Vector3 (box.transform.position.x, box.transform.position.y - 1.0f, box.transform.position.z);
+							//Vector3 newPositionAnimal = new Vector3 (box.transform.position.x, box.transform.position.y + 5.0f, box.transform.position.z);
 							GameObject aux = Instantiate (GlobalObject.GetAnimal (randomIndex), box.transform.position, box.transform.rotation) as GameObject;
 							aux.transform.parent = Animals.transform;
 							listGreenBox.Remove (box);
@@ -519,7 +531,7 @@ public class MountainGenerator : MonoBehaviour {
 					foreach (GameObject box in listGreenBox) {
 						if (randomIndex == cont) {
 							randomIndex = Random.Range (0, GlobalObject.sizeEnemigos ());
-
+							//Vector3 newPositionEnemy = new Vector3 (box.transform.position.x, box.transform.position.y + 1.0f, box.transform.position.z);
 							GameObject aux = Instantiate (GlobalObject.GetEnemigos (randomIndex), box.transform.position, box.transform.rotation) as GameObject;
 							aux.transform.parent = Enemigos.transform;
 							listGreenBox.Remove (box);
@@ -541,9 +553,10 @@ public class MountainGenerator : MonoBehaviour {
 					foreach (GameObject box in listGreenBox) {
 						if (randomIndex == cont) {
 							randomIndex = Random.Range (0, GlobalObject.sizeEnemigos ());
-
+							//Vector3 newPositionEnemy = new Vector3 (box.transform.position.x, box.transform.position.y + 1.0f, box.transform.position.z);
 							GameObject aux = Instantiate (GlobalObject.GetEnemigos (randomIndex), box.transform.position, box.transform.rotation) as GameObject;
 							aux.transform.parent = Enemigos.transform;
+							aux.GetComponent<IAenemigoMedio> ().life = 150;
 							listGreenBox.Remove (box);
 							break;
 						} else {
@@ -563,9 +576,10 @@ public class MountainGenerator : MonoBehaviour {
 					foreach (GameObject box in listGreenBox) {
 						if (randomIndex == cont) {
 							randomIndex = Random.Range (0, GlobalObject.sizeEnemigos ());
-
+							//Vector3 newPositionEnemy = new Vector3 (box.transform.position.x, box.transform.position.y + 1.0f, box.transform.position.z);
 							GameObject aux = Instantiate (GlobalObject.GetEnemigos (randomIndex), box.transform.position, box.transform.rotation) as GameObject;
 							aux.transform.parent = Enemigos.transform;
+							aux.GetComponent<IAenemigoMedio> ().life = 200;
 							listGreenBox.Remove (box);
 							break;
 						} else {
@@ -586,7 +600,7 @@ public class MountainGenerator : MonoBehaviour {
 					foreach (GameObject box in listGreenBox) {
 						if (randomIndex == cont) {
 							randomIndex = Random.Range (0, GlobalObject.sizeEnemigosGrandes ());
-
+							//Vector3 newPositionEnemy = new Vector3 (box.transform.position.x, box.transform.position.y + 5.0f, box.transform.position.z);
 							GameObject aux = Instantiate (GlobalObject.GetEnemigosGrandes (randomIndex), box.transform.position, box.transform.rotation) as GameObject;
 							aux.transform.parent = Enemigos.transform;
 							listGreenBox.Remove (box);
@@ -657,6 +671,19 @@ public class MountainGenerator : MonoBehaviour {
 			}
 		}
 
+		return position;
+	}
+
+	public Vector3 GetPositionGreenCubeHeightZero(){
+
+		Vector3 position = new Vector3 ();
+
+		foreach (GameObject box in listGreenBox) {
+			if (box.transform.position.y == 0) {
+				position = box.transform.position;
+				break;
+			}
+		} 
 		return position;
 	}
 }

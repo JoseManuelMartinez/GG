@@ -5,7 +5,10 @@ using UnityEngine.SceneManagement;
 
 public class SceneController : MonoBehaviour {
 
+	public Canvas canvas;
+
 	public void gotoReload(){
+		canvas.gameObject.SetActive (false);
 		SceneManager.LoadScene ("GenerarMapa");
 	}
 
@@ -15,5 +18,9 @@ public class SceneController : MonoBehaviour {
 
 	public void gotoCreditos(){
 		SceneManager.LoadScene ("Creditos");
+	}
+
+	public void quitGame(){
+		Application.Quit ();
 	}
 }

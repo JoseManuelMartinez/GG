@@ -12,6 +12,7 @@ public class IAenemigoMedio : MonoBehaviour {
 	private Animator animator;
 	public GameObject IconoEnemigo;
 	public bool stopDead = true;
+	private Terrain map;
 
 	public float distance = 30;
 
@@ -20,10 +21,12 @@ public class IAenemigoMedio : MonoBehaviour {
 		agent = GetComponent<NavMeshAgent> ();
 		animator = GetComponent<Animator> ();
 		Player = GlobalObject.GetPlayer ();
+		map = GlobalObject.GetMap ();
 
 		if (!GlobalObject.IconoEnemigos) {
 			IconoEnemigo.SetActive (false);
 		}
+
 	}
 	// Update is called once per frame
 	void Update () {
@@ -43,8 +46,9 @@ public class IAenemigoMedio : MonoBehaviour {
 		} else if(Vector3.Distance (Player.transform.position, transform.position) < distance){//Si ve al jugador
 			
 			Vector3 distancia = Player.transform.position - transform.position;
-
-			agent.SetDestination (Player.transform.position);
+			//agent.Warp(this.gameObject.transform.position);
+			Vector3 destination = new Vector3 (Player.transform.position.x, map.terrainData.GetHeight((int)Player.transform.position.x,(int)Player.transform.position.z), Player.transform.position.z);
+			agent.SetDestination (destination);
 			agent.speed = speed;
 			animator.SetBool ("isIdle",false);
 
